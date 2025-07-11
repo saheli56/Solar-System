@@ -5,6 +5,22 @@ let scene, camera, renderer, controls, skybox;
 let planet_sun, planet_mercury, planet_venus, planet_earth, planet_mars, planet_jupiter, planet_saturn, planet_uranus, planet_neptune;
 let planet_sun_label;
 
+// Store all planet meshes for raycasting
+let planetMeshes = [];
+
+// Tooltip element
+let tooltip = document.createElement('div');
+tooltip.style.position = 'fixed';
+tooltip.style.pointerEvents = 'none';
+tooltip.style.background = 'rgba(0,0,0,0.8)';
+tooltip.style.color = '#fff';
+tooltip.style.padding = '8px 12px';
+tooltip.style.borderRadius = '6px';
+tooltip.style.fontSize = '14px';
+tooltip.style.display = 'none';
+tooltip.style.zIndex = '1000';
+document.body.appendChild(tooltip);
+
 
 let mercury_orbit_radius = 50
 let venus_orbit_radius = 60
@@ -79,15 +95,28 @@ function init() {
   );
 
   setSkyBox();
-  planet_earth = loadPlanetTexture("../img/earth_hd.jpg", 4, 100, 100, 'standard');
+
+  // Create planets with metadata
   planet_sun = loadPlanetTexture("../img/sun_hd.jpg", 20, 100, 100, 'basic');
+  planet_sun.userData = { name: "Sun", type: "Star", size: 20, distance: 0 };
   planet_mercury = loadPlanetTexture("../img/mercury_hd.jpg", 2, 100, 100, 'standard');
+  planet_mercury.userData = { name: "Mercury", type: "Planet", size: 2, distance: mercury_orbit_radius };
   planet_venus = loadPlanetTexture("../img/venus_hd.jpg", 3, 100, 100, 'standard');
+  planet_venus.userData = { name: "Venus", type: "Planet", size: 3, distance: venus_orbit_radius };
+  planet_earth = loadPlanetTexture("../img/earth_hd.jpg", 4, 100, 100, 'standard');
+  planet_earth.userData = { name: "Earth", type: "Planet", size: 4, distance: earth_orbit_radius };
   planet_mars = loadPlanetTexture("../img/mars_hd.jpg", 3.5, 100, 100, 'standard');
+  planet_mars.userData = { name: "Mars", type: "Planet", size: 3.5, distance: mars_orbit_radius };
   planet_jupiter = loadPlanetTexture("../img/jupiter_hd.jpg", 10, 100, 100, 'standard');
+  planet_jupiter.userData = { name: "Jupiter", type: "Planet", size: 10, distance: jupiter_orbit_radius };
   planet_saturn = loadPlanetTexture("../img/saturn_hd.jpg", 8, 100, 100, 'standard');
+  planet_saturn.userData = { name: "Saturn", type: "Planet", size: 8, distance: saturn_orbit_radius };
   planet_uranus = loadPlanetTexture("../img/uranus_hd.jpg", 6, 100, 100, 'standard');
+  planet_uranus.userData = { name: "Uranus", type: "Planet", size: 6, distance: uranus_orbit_radius };
   planet_neptune = loadPlanetTexture("../img/neptune_hd.jpg", 5, 100, 100, 'standard');
+  planet_neptune.userData = { name: "Neptune", type: "Planet", size: 5, distance: neptune_orbit_radius };
+
+  planetMeshes = [planet_mercury, planet_venus, planet_earth, planet_mars, planet_jupiter, planet_saturn, planet_uranus, planet_neptune, planet_sun];
 
   // planet_earth_label = new THREE.TextGeometry( text, parameters );
   // planet_mercury_label = loadPlanetTexture("../img/mercury_hd.jpg", 2, 100, 100);
@@ -108,6 +137,9 @@ function init() {
   scene.add(planet_saturn);
   scene.add(planet_uranus);
   scene.add(planet_neptune);
+
+  // Raycaster setup
+  window.addEventListener('mousemove', onMouseMove, false);
 
   const sunLight = new THREE.PointLight(0xffffff, 1, 0); // White light, intensity 1, no distance attenuation
   sunLight.position.copy(planet_sun.position); // Position the light at the Sun's position
@@ -177,6 +209,33 @@ function animate(time) {
   planetRevolver(time, saturn_revolution_speed, planet_saturn, saturn_orbit_radius, 'saturn')
   planetRevolver(time, uranus_revolution_speed, planet_uranus, uranus_orbit_radius, 'uranus')
   planetRevolver(time, neptune_revolution_speed, planet_neptune, neptune_orbit_radius, 'neptune')
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// Raycasting logic
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseMove(event) {
+  // Calculate mouse position in normalized device coordinates (-1 to +1)
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(planetMeshes);
+
+  if (intersects.length > 0) {
+    const planet = intersects[0].object;
+    const data = planet.userData;
+    tooltip.innerHTML = `<strong>${data.name}</strong><br>Type: ${data.type}<br>Size: ${data.size}<br>Distance: ${data.distance}`;
+    tooltip.style.left = (event.clientX + 15) + 'px';
+    tooltip.style.top = (event.clientY + 15) + 'px';
+    tooltip.style.display = 'block';
+  } else {
+    tooltip.style.display = 'none';
+  }
 
 
 
