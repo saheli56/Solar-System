@@ -18,6 +18,26 @@ bgAudio.autoplay = true;
 bgAudio.volume = 1.0; // Set volume to maximum for better audibility
 bgAudio.style.display = 'none';
 document.body.appendChild(bgAudio);
+
+// --- Overlay for user interaction to start audio ---
+const audioOverlay = document.createElement('div');
+audioOverlay.style.position = 'fixed';
+audioOverlay.style.top = '0';
+audioOverlay.style.left = '0';
+audioOverlay.style.width = '100vw';
+audioOverlay.style.height = '100vh';
+audioOverlay.style.background = 'rgba(0,0,0,0.85)';
+audioOverlay.style.display = 'flex';
+audioOverlay.style.alignItems = 'center';
+audioOverlay.style.justifyContent = 'center';
+audioOverlay.style.zIndex = '2000';
+audioOverlay.innerHTML = `<button id="startAudioBtn" style="padding: 22px 48px; font-size: 1.5rem; border-radius: 18px; border: none; background: linear-gradient(135deg,#222 60%,#444 100%); color: #fff; box-shadow: 0 4px 18px rgba(0,0,0,0.25); cursor: pointer;">🔊 Start Audio</button>`;
+document.body.appendChild(audioOverlay);
+
+document.getElementById('startAudioBtn').onclick = function() {
+  bgAudio.play();
+  audioOverlay.style.display = 'none';
+};
 tooltip.style.position = 'fixed';
 tooltip.style.pointerEvents = 'none';
 tooltip.style.background = 'rgba(0,0,0,0.8)';
