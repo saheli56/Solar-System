@@ -181,7 +181,8 @@ function planetRevolver(time, speed, planet, orbitRadius, planetName) {
 
 
 function animate(time) {
-  requestAnimationFrame(animate);
+  // Only animate if not paused
+  if (isPaused) return;
 
   // Rotate the planets
   const rotationSpeed = 0.005;
@@ -196,19 +197,14 @@ function animate(time) {
   planet_neptune.rotation.y += rotationSpeed;
 
   // Revolve planets around the sun
-  // const orbitSpeedMultiplier = 0.001;
-  // Earth
-  // const earthOrbitAngle = time * orbitSpeedMultiplier;
-  // planet_earth.position.x = planet_sun.position.x + earth_orbit_radius * Math.cos(earthOrbitAngle);
-  // planet_earth.position.z = planet_sun.position.z + earth_orbit_radius * Math.sin(earthOrbitAngle);
-  planetRevolver(time, mercury_revolution_speed, planet_mercury, mercury_orbit_radius, 'mercury')
-  planetRevolver(time, venus_revolution_speed, planet_venus, venus_orbit_radius, 'venus')
-  planetRevolver(time, earth_revolution_speed, planet_earth, earth_orbit_radius, 'earth')
-  planetRevolver(time, mars_revolution_speed, planet_mars, mars_orbit_radius, 'mars')
-  planetRevolver(time, jupiter_revolution_speed, planet_jupiter, jupiter_orbit_radius, 'jupiter')
-  planetRevolver(time, saturn_revolution_speed, planet_saturn, saturn_orbit_radius, 'saturn')
-  planetRevolver(time, uranus_revolution_speed, planet_uranus, uranus_orbit_radius, 'uranus')
-  planetRevolver(time, neptune_revolution_speed, planet_neptune, neptune_orbit_radius, 'neptune')
+  planetRevolver(time, mercury_revolution_speed, planet_mercury, mercury_orbit_radius, 'mercury');
+  planetRevolver(time, venus_revolution_speed, planet_venus, venus_orbit_radius, 'venus');
+  planetRevolver(time, earth_revolution_speed, planet_earth, earth_orbit_radius, 'earth');
+  planetRevolver(time, mars_revolution_speed, planet_mars, mars_orbit_radius, 'mars');
+  planetRevolver(time, jupiter_revolution_speed, planet_jupiter, jupiter_orbit_radius, 'jupiter');
+  planetRevolver(time, saturn_revolution_speed, planet_saturn, saturn_orbit_radius, 'saturn');
+  planetRevolver(time, uranus_revolution_speed, planet_uranus, uranus_orbit_radius, 'uranus');
+  planetRevolver(time, neptune_revolution_speed, planet_neptune, neptune_orbit_radius, 'neptune');
 
   controls.update();
   renderer.render(scene, camera);
@@ -253,4 +249,122 @@ function onWindowResize() {
 window.addEventListener("resize", onWindowResize, false);
 
 init();
-animate(0); // Initialize with time 0
+
+// --- UI BUTTONS ---
+const controlsContainer = document.createElement('div');
+controlsContainer.style.position = 'fixed';
+controlsContainer.style.top = '30px';
+controlsContainer.style.left = '50%';
+controlsContainer.style.transform = 'translateX(-50%)';
+controlsContainer.style.display = 'flex';
+controlsContainer.style.gap = '18px';
+controlsContainer.style.zIndex = '1001';
+document.body.appendChild(controlsContainer);
+
+function createButton(text, id) {
+  const btn = document.createElement('button');
+  btn.id = id;
+  btn.innerText = text;
+  btn.className = 'solar-btn';
+  controlsContainer.appendChild(btn);
+  return btn;
+}
+
+createButton('⏸️ Pause', 'pauseResumeBtn');
+createButton('Reset', 'resetBtn');
+createButton('Focus on Sun', 'focusSunBtn');
+
+// --- CSS for 3D animated buttons ---
+const style = document.createElement('style');
+style.innerHTML = `
+  .solar-btn {
+    background: linear-gradient(135deg, #222 60%, #444 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-family: inherit;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25), 0 1.5px 0 #fff inset;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(.25,.8,.25,1), box-shadow 0.2s, background 0.3s;
+    perspective: 300px;
+    outline: none;
+    margin: 0;
+    position: relative;
+  }
+  .solar-btn:hover {
+    transform: scale(1.08) rotateX(8deg) rotateY(-8deg);
+    box-shadow: 0 8px 32px rgba(255,255,255,0.15), 0 2px 0 #fff inset;
+    background: linear-gradient(135deg, #333 60%, #666 100%);
+  }
+  .solar-btn:active {
+    transform: scale(0.98) rotateX(0deg) rotateY(0deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+`;
+document.head.appendChild(style);
+
+// --- Animation control logic ---
+
+let isPaused = false;
+let lastTime = 0;
+let animationFrameId = null;
+function animateWrapper(time) {
+  animate(time);
+  lastTime = time;
+  if (!isPaused) {
+    animationFrameId = requestAnimationFrame(animateWrapper);
+  } else {
+    animationFrameId = null;
+  }
+}
+// Start animation loop
+animationFrameId = requestAnimationFrame(animateWrapper);
+
+// Pause/Resume toggle button
+const pauseResumeBtn = document.getElementById('pauseResumeBtn');
+pauseResumeBtn.onclick = function() {
+  isPaused = !isPaused;
+  pauseResumeBtn.innerText = isPaused ? '▶️ Resume' : '⏸️ Pause';
+  if (!isPaused && !animationFrameId) {
+    animationFrameId = requestAnimationFrame(animateWrapper);
+  }
+};
+
+// Pause/Resume with spacebar
+window.addEventListener('keydown', function(e) {
+  if (e.code === 'Space') {
+    isPaused = !isPaused;
+    pauseResumeBtn.innerText = isPaused ? '▶️ Resume' : '⏸️ Pause';
+    if (!isPaused && !animationFrameId) {
+      animationFrameId = requestAnimationFrame(animateWrapper);
+    }
+  }
+});
+
+// Reset button: reset camera to default view
+document.getElementById('resetBtn').onclick = function() {
+  controls.target.set(0, 0, 0);
+  camera.position.set(0, 0, 100);
+  controls.update();
+};
+
+// Focus on Sun button: smooth camera move to Sun
+document.getElementById('focusSunBtn').onclick = function() {
+  const duration = 900; // ms
+  const start = performance.now();
+  const startPos = camera.position.clone();
+  const endPos = planet_sun.position.clone().add(new THREE.Vector3(0, 0, 40));
+  const startTarget = controls.target.clone();
+  const endTarget = planet_sun.position.clone();
+
+  function animateCamera(ts) {
+    const t = Math.min((ts - start) / duration, 1);
+    camera.position.lerpVectors(startPos, endPos, t);
+    controls.target.lerpVectors(startTarget, endTarget, t);
+    controls.update();
+    if (t < 1) requestAnimationFrame(animateCamera);
+  }
+  requestAnimationFrame(animateCamera);
+};
