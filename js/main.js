@@ -10,6 +10,14 @@ let planetMeshes = [];
 
 // Tooltip element
 let tooltip = document.createElement('div');
+// --- Background Audio ---
+const bgAudio = document.createElement('audio');
+bgAudio.src = '../audio/Combined_Compressed.mp3';
+bgAudio.loop = true;
+bgAudio.autoplay = true;
+bgAudio.volume = 1.0; // Set volume to maximum for better audibility
+bgAudio.style.display = 'none';
+document.body.appendChild(bgAudio);
 tooltip.style.position = 'fixed';
 tooltip.style.pointerEvents = 'none';
 tooltip.style.background = 'rgba(0,0,0,0.8)';
@@ -273,6 +281,8 @@ function createButton(text, id) {
 createButton('⏸️ Pause', 'pauseResumeBtn');
 createButton('Reset', 'resetBtn');
 createButton('Focus on Sun', 'focusSunBtn');
+// Add mute/unmute button for background music
+createButton('🔊 Mute Music', 'muteMusicBtn');
 
 // --- CSS for 3D animated buttons ---
 const style = document.createElement('style');
@@ -330,6 +340,13 @@ pauseResumeBtn.onclick = function() {
   if (!isPaused && !animationFrameId) {
     animationFrameId = requestAnimationFrame(animateWrapper);
   }
+};
+
+// Mute/Unmute music button logic
+const muteMusicBtn = document.getElementById('muteMusicBtn');
+muteMusicBtn.onclick = function() {
+  bgAudio.muted = !bgAudio.muted;
+  muteMusicBtn.innerText = bgAudio.muted ? '🔈 Unmute Music' : '🔊 Mute Music';
 };
 
 // Pause/Resume with spacebar
