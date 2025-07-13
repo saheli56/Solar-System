@@ -234,6 +234,8 @@ function animate(time) {
   planetRevolver(time, uranus_revolution_speed, planet_uranus, uranus_orbit_radius, 'uranus');
   planetRevolver(time, neptune_revolution_speed, planet_neptune, neptune_orbit_radius, 'neptune');
 
+  // Animate shooting stars
+  updateShootingStars();
   controls.update();
   renderer.render(scene, camera);
 }
@@ -340,6 +342,82 @@ document.head.appendChild(style);
 let isPaused = false;
 let lastTime = 0;
 let animationFrameId = null;
+
+// --- Shooting Stars ---
+let shootingStars = [];
+function createShootingStar() {
+  // Random color for each shooting star
+  const colors = [0xff99cc, 0x99ccff, 0xffff99, 0x99ff99, 0xffcc99, 0xcc99ff];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  // Shooting star geometry and material (larger and glowing)
+  const geometry = new THREE.SphereGeometry(0.6, 18, 18);
+  const material = new THREE.MeshBasicMaterial({ color, emissive: color, emissiveIntensity: 1 });
+  const star = new THREE.Mesh(geometry, material);
+  // Create a longer, fading trail
+  const trailLength = 8 + Math.random() * 8;
+  const trailPoints = [];
+  for (let i = 0; i < trailLength; i++) {
+    trailPoints.push(new THREE.Vector3(-i * 1.2, i * 1.2, 0));
+  }
+  const trailGeometry = new THREE.BufferGeometry().setFromPoints(trailPoints);
+  const trailMaterial = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5 });
+  const trail = new THREE.Line(trailGeometry, trailMaterial);
+  star.add(trail);
+  // Random start position (top, left, or right edge)
+  const edgeRand = Math.random();
+  if (edgeRand < 0.33) {
+    // Top
+    star.position.x = (Math.random() - 0.5) * 200;
+    star.position.y = 80 + Math.random() * 20;
+    star.position.z = (Math.random() - 0.5) * 200;
+    star.userData.vx = 2.2 + Math.random() * 1.5;
+    star.userData.vy = -3.2 - Math.random();
+    star.userData.vz = 1.2 + Math.random();
+  } else if (edgeRand < 0.66) {
+    // Left
+    star.position.x = -120 - Math.random() * 20;
+    star.position.y = (Math.random() - 0.5) * 80 + 40;
+    star.position.z = (Math.random() - 0.5) * 200;
+    star.userData.vx = 3.2 + Math.random() * 1.5;
+    star.userData.vy = -2.2 - Math.random();
+    star.userData.vz = 1.2 + Math.random();
+  } else {
+    // Right
+    star.position.x = 120 + Math.random() * 20;
+    star.position.y = (Math.random() - 0.5) * 80 + 40;
+    star.position.z = (Math.random() - 0.5) * 200;
+    star.userData.vx = -3.2 - Math.random() * 1.5;
+    star.userData.vy = -2.2 - Math.random();
+    star.userData.vz = 1.2 + Math.random();
+  }
+  scene.add(star);
+  shootingStars.push(star);
+}
+
+function updateShootingStars() {
+  for (let i = shootingStars.length - 1; i >= 0; i--) {
+    const star = shootingStars[i];
+    star.position.x += star.userData.vx;
+    star.position.y += star.userData.vy;
+    star.position.z += star.userData.vz;
+    // Remove if out of view
+    if (star.position.x > 150 || star.position.y < -80 || star.position.x < -150 || star.position.y > 120) {
+      scene.remove(star);
+      shootingStars.splice(i, 1);
+    }
+  }
+}
+
+// Periodically create shooting stars
+// Dramatic: more frequent shooting stars
+setInterval(() => {
+  if (!isPaused) {
+    for (let i = 0; i < 3; i++) {
+      if (Math.random() < 0.8) createShootingStar();
+    }
+  }
+}, 400);
+
 function animateWrapper(time) {
   animate(time);
   lastTime = time;
