@@ -100,16 +100,21 @@ function loadPlanetTexture(texture, radius, widthSegments, heightSegments, meshT
 
 
 
-function createRing(innerRadius) {
-  let outerRadius = innerRadius - 0.1
-  let thetaSegments = 100
+function createRing(innerRadius, options = {}) {
+  let outerRadius = innerRadius - (options.thickness || 0.1);
+  let thetaSegments = 100;
   const geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
-  const material = new THREE.MeshBasicMaterial({ color: '#ffffff', side: THREE.DoubleSide });
+  let material;
+  if (options.texture) {
+    const texture = new THREE.TextureLoader().load(options.texture);
+    material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true, opacity: options.opacity || 0.6 });
+  } else {
+    material = new THREE.MeshBasicMaterial({ color: '#ffffff', side: THREE.DoubleSide });
+  }
   const mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh)
-  mesh.rotation.x = Math.PI / 2
+  scene.add(mesh);
+  mesh.rotation.x = Math.PI / 2;
   return mesh;
-
 }
 
 
@@ -174,14 +179,17 @@ function init() {
   scene.add(sunLight);
 
   // Rotation orbit
-  createRing(mercury_orbit_radius)
-  createRing(venus_orbit_radius)
-  createRing(earth_orbit_radius)
-  createRing(mars_orbit_radius)
-  createRing(jupiter_orbit_radius)
-  createRing(saturn_orbit_radius)
-  createRing(uranus_orbit_radius)
-  createRing(neptune_orbit_radius)
+  createRing(mercury_orbit_radius);
+  createRing(venus_orbit_radius);
+  createRing(earth_orbit_radius);
+  createRing(mars_orbit_radius);
+  createRing(jupiter_orbit_radius);
+  // Saturn's ring as a child of Saturn mesh
+  const saturnRing = createRing(15, { texture: '../img/saturn_ring.jpg', opacity: 0.85, thickness: 2 });
+  saturnRing.position.set(0, 0, 0); // Centered on Saturn
+  planet_saturn.add(saturnRing);
+  createRing(uranus_orbit_radius);
+  createRing(neptune_orbit_radius);
 
 
 
