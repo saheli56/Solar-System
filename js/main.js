@@ -31,16 +31,16 @@ planetInfoPanel.style.width = '100%';
 planetInfoPanel.style.height = '60%';
 planetInfoPanel.style.background = 'linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%)';
 planetInfoPanel.style.color = '#fff';
-planetInfoPanel.style.padding = '20px';
+planetInfoPanel.style.padding = '20px 32px 20px 20px'; // Add right padding for button
 planetInfoPanel.style.borderRadius = '20px 20px 0 0';
 planetInfoPanel.style.boxShadow = '0 -10px 30px rgba(0,0,0,0.5)';
 planetInfoPanel.style.zIndex = '2000';
 planetInfoPanel.style.transition = 'bottom 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
 planetInfoPanel.style.overflowY = 'auto';
 planetInfoPanel.innerHTML = `
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-right: 12px;">
     <h2 id="planetInfoTitle" style="margin: 0; color: #ffd700;">Planet Information</h2>
-    <button onclick="hidePlanetInfo()" style="background: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">Close</button>
+    <button onclick="hidePlanetInfo()" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 16px;">Close</button>
   </div>
   <div id="planetInfoContent" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;"></div>
 `;
