@@ -171,6 +171,23 @@ function init() {
   scene.add(planet_uranus);
   scene.add(planet_neptune);
 
+  // --- Add Astronaut (Space Shuttle) Image as Plane Mesh ---
+  const shuttleTexture = new THREE.TextureLoader().load("../img/space_shuttle.jpg");
+  const shuttleMaterial = new THREE.MeshBasicMaterial({ map: shuttleTexture, transparent: true });
+  const shuttleWidth = 8; // realistic size
+  const shuttleHeight = 4;
+  const shuttleGeometry = new THREE.PlaneGeometry(shuttleWidth, shuttleHeight);
+  window.shuttleMesh = new THREE.Mesh(shuttleGeometry, shuttleMaterial); // global for animation
+  // Initial position near Earth
+  window.shuttleMesh.position.set(
+    planet_earth.position.x + 12,
+    planet_earth.position.y + 6,
+    planet_earth.position.z + 0
+  );
+  window.shuttleMesh.rotation.y = Math.PI / 4; // slight angle for realism
+  window.shuttleMesh.rotation.x = -Math.PI / 12;
+  scene.add(window.shuttleMesh);
+
   // Raycaster setup
   window.addEventListener('mousemove', onMouseMove, false);
 
@@ -201,6 +218,8 @@ function init() {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.minDistance = 12;
   controls.maxDistance = 1000;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
 
   camera.position.z = 100;
 }
@@ -242,8 +261,21 @@ function animate(time) {
   planetRevolver(time, uranus_revolution_speed, planet_uranus, uranus_orbit_radius, 'uranus');
   planetRevolver(time, neptune_revolution_speed, planet_neptune, neptune_orbit_radius, 'neptune');
 
+  // Make shuttle follow Earth
+  if (window.shuttleMesh && planet_earth) {
+    window.shuttleMesh.position.set(
+      planet_earth.position.x + 12,
+      planet_earth.position.y + 6,
+      planet_earth.position.z + 0
+    );
+    window.shuttleMesh.rotation.y = Math.PI / 4;
+    window.shuttleMesh.rotation.x = -Math.PI / 12;
+  }
+
   // Animate shooting stars
   updateShootingStars();
+  // Animate comets
+  updateComets();
   controls.update();
   renderer.render(scene, camera);
 }
@@ -426,13 +458,75 @@ setInterval(() => {
   }
 }, 400);
 
+// --- Comets ---
+let comets = [];
+function createComet() {
+  // Comet head: larger, very bright, glowing sphere
+  const headGeometry = new THREE.SphereGeometry(2, 24, 24);
+  const headMaterial = new THREE.MeshBasicMaterial({ color: 0xfff700, emissive: 0xfff700, emissiveIntensity: 4 });
+  const cometHead = new THREE.Mesh(headGeometry, headMaterial);
+
+  // Comet tail: much longer, brighter, and more visible
+  const tailLength = 40 + Math.random() * 30;
+  const tailPoints = [];
+  for (let i = 0; i < tailLength; i++) {
+    tailPoints.push(new THREE.Vector3(-i * 2.2, i * 1.2, 0));
+  }
+  const tailGeometry = new THREE.BufferGeometry().setFromPoints(tailPoints);
+  const tailMaterial = new THREE.LineBasicMaterial({ color: 0xfff700, transparent: true, opacity: 0.85, linewidth: 8 });
+  const tail = new THREE.Line(tailGeometry, tailMaterial);
+  cometHead.add(tail);
+
+  // Random start position (top or left edge)
+  const edge = Math.random() < 0.5 ? 'top' : 'left';
+  if (edge === 'top') {
+    cometHead.position.x = (Math.random() - 0.5) * 200;
+    cometHead.position.y = 90 + Math.random() * 30;
+    cometHead.position.z = (Math.random() - 0.5) * 200;
+    cometHead.userData.vx = 2.5 + Math.random();
+    cometHead.userData.vy = -3.5 - Math.random();
+    cometHead.userData.vz = 1.2 + Math.random();
+  } else {
+    cometHead.position.x = -140 - Math.random() * 30;
+    cometHead.position.y = (Math.random() - 0.5) * 80 + 40;
+    cometHead.position.z = (Math.random() - 0.5) * 200;
+    cometHead.userData.vx = 3.5 + Math.random();
+    cometHead.userData.vy = -2.5 - Math.random();
+    cometHead.userData.vz = 1.2 + Math.random();
+  }
+  scene.add(cometHead);
+  comets.push(cometHead);
+}
+
+function updateComets() {
+  for (let i = comets.length - 1; i >= 0; i--) {
+    const comet = comets[i];
+    comet.position.x += comet.userData.vx;
+    comet.position.y += comet.userData.vy;
+    comet.position.z += comet.userData.vz;
+    // Remove if out of view
+    if (comet.position.x > 180 || comet.position.y < -100 || comet.position.x < -180 || comet.position.y > 150) {
+      scene.remove(comet);
+      comets.splice(i, 1);
+    }
+  }
+}
+
+// Occasionally spawn comets
+setInterval(() => {
+  if (!isPaused && Math.random() < 0.15) createComet();
+}, 2000);
+
 function animateWrapper(time) {
-  animate(time);
-  lastTime = time;
   if (!isPaused) {
+    animate(time);
+    lastTime = time;
     animationFrameId = requestAnimationFrame(animateWrapper);
   } else {
-    animationFrameId = null;
+    // When paused, keep updating controls and rendering for smooth orbit rotation
+    controls.update();
+    renderer.render(scene, camera);
+    animationFrameId = requestAnimationFrame(animateWrapper);
   }
 }
 // Start animation loop
