@@ -21,6 +21,167 @@ tooltip.style.display = 'none';
 tooltip.style.zIndex = '1000';
 document.body.appendChild(tooltip);
 
+// Create detailed planet info panel
+const planetInfoPanel = document.createElement('div');
+planetInfoPanel.id = 'planetInfoPanel';
+planetInfoPanel.style.position = 'fixed';
+planetInfoPanel.style.bottom = '-100%';
+planetInfoPanel.style.left = '0';
+planetInfoPanel.style.width = '100%';
+planetInfoPanel.style.height = '60%';
+planetInfoPanel.style.background = 'linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%)';
+planetInfoPanel.style.color = '#fff';
+planetInfoPanel.style.padding = '20px';
+planetInfoPanel.style.borderRadius = '20px 20px 0 0';
+planetInfoPanel.style.boxShadow = '0 -10px 30px rgba(0,0,0,0.5)';
+planetInfoPanel.style.zIndex = '2000';
+planetInfoPanel.style.transition = 'bottom 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
+planetInfoPanel.style.overflowY = 'auto';
+planetInfoPanel.innerHTML = `
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2 id="planetInfoTitle" style="margin: 0; color: #ffd700;">Planet Information</h2>
+    <button onclick="hidePlanetInfo()" style="background: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">Close</button>
+  </div>
+  <div id="planetInfoContent" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;"></div>
+`;
+document.body.appendChild(planetInfoPanel);
+
+// Planet data
+const planetData = {
+  'Sun': {
+    mass: '1.989 × 10³⁰ kg',
+    diameter: '1.392 million km',
+    temperature: '5,778 K (surface)',
+    composition: 'Hydrogen (73%), Helium (25%)',
+    age: '4.6 billion years',
+    type: 'G-type main-sequence star',
+    luminosity: '3.828 × 10²⁶ watts'
+  },
+  'Mercury': {
+    mass: '3.301 × 10²³ kg',
+    diameter: '4,879 km',
+    density: '5.427 g/cm³',
+    temperature: '427°C (day), -173°C (night)',
+    orbitalPeriod: '88 Earth days',
+    rotationPeriod: '59 Earth days',
+    moons: '0',
+    atmosphere: 'Minimal (oxygen, sodium, hydrogen)',
+    escapeVelocity: '4.25 km/s'
+  },
+  'Venus': {
+    mass: '4.867 × 10²⁴ kg',
+    diameter: '12,104 km',
+    density: '5.243 g/cm³',
+    temperature: '464°C (surface)',
+    orbitalPeriod: '225 Earth days',
+    rotationPeriod: '243 Earth days (retrograde)',
+    moons: '0',
+    atmosphere: '96.5% CO₂, 3.5% nitrogen',
+    escapeVelocity: '10.36 km/s'
+  },
+  'Earth': {
+    mass: '5.972 × 10²⁴ kg',
+    diameter: '12,756 km',
+    density: '5.514 g/cm³',
+    temperature: '15°C (average)',
+    orbitalPeriod: '365.25 days',
+    rotationPeriod: '24 hours',
+    moons: '1 (Moon)',
+    atmosphere: '78% nitrogen, 21% oxygen',
+    escapeVelocity: '11.19 km/s'
+  },
+  'Mars': {
+    mass: '6.417 × 10²³ kg',
+    diameter: '6,792 km',
+    density: '3.933 g/cm³',
+    temperature: '-65°C (average)',
+    orbitalPeriod: '687 Earth days',
+    rotationPeriod: '24.6 hours',
+    moons: '2 (Phobos, Deimos)',
+    atmosphere: '95% CO₂, 3% nitrogen',
+    escapeVelocity: '5.03 km/s'
+  },
+  'Jupiter': {
+    mass: '1.898 × 10²⁷ kg',
+    diameter: '142,984 km',
+    density: '1.326 g/cm³',
+    temperature: '-110°C (cloud tops)',
+    orbitalPeriod: '12 Earth years',
+    rotationPeriod: '9.9 hours',
+    moons: '79+ (Europa, Ganymede, Io, Callisto)',
+    atmosphere: '89% hydrogen, 10% helium',
+    escapeVelocity: '59.5 km/s'
+  },
+  'Saturn': {
+    mass: '5.683 × 10²⁶ kg',
+    diameter: '120,536 km',
+    density: '0.687 g/cm³',
+    temperature: '-140°C (cloud tops)',
+    orbitalPeriod: '29.5 Earth years',
+    rotationPeriod: '10.7 hours',
+    moons: '82+ (Titan, Enceladus, Mimas)',
+    atmosphere: '96% hydrogen, 3% helium',
+    escapeVelocity: '35.5 km/s'
+  },
+  'Uranus': {
+    mass: '8.681 × 10²⁵ kg',
+    diameter: '51,118 km',
+    density: '1.271 g/cm³',
+    temperature: '-195°C (cloud tops)',
+    orbitalPeriod: '84 Earth years',
+    rotationPeriod: '17.2 hours (retrograde)',
+    moons: '27+ (Miranda, Ariel, Umbriel)',
+    atmosphere: '83% hydrogen, 15% helium, 2% methane',
+    escapeVelocity: '21.3 km/s'
+  },
+  'Neptune': {
+    mass: '1.024 × 10²⁶ kg',
+    diameter: '49,528 km',
+    density: '1.638 g/cm³',
+    temperature: '-200°C (cloud tops)',
+    orbitalPeriod: '165 Earth years',
+    rotationPeriod: '16.1 hours',
+    moons: '14+ (Triton, Nereid)',
+    atmosphere: '80% hydrogen, 19% helium, 1% methane',
+    escapeVelocity: '23.5 km/s'
+  }
+};
+
+// Functions to show/hide planet info panel
+function showPlanetInfo(planetName) {
+  const panel = document.getElementById('planetInfoPanel');
+  const title = document.getElementById('planetInfoTitle');
+  const content = document.getElementById('planetInfoContent');
+  
+  title.textContent = planetName + ' - Detailed Information';
+  
+  const data = planetData[planetName];
+  if (data) {
+    let htmlContent = '';
+    for (const [key, value] of Object.entries(data)) {
+      const displayKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+      htmlContent += `
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #ffd700;">
+          <strong style="color: #ffd700; display: block; margin-bottom: 5px;">${displayKey}:</strong>
+          <span style="font-size: 16px;">${value}</span>
+        </div>
+      `;
+    }
+    content.innerHTML = htmlContent;
+  }
+  
+  panel.style.bottom = '0';
+}
+
+function hidePlanetInfo() {
+  const panel = document.getElementById('planetInfoPanel');
+  panel.style.bottom = '-100%';
+}
+
+// Add global functions to window for onclick handlers
+window.showPlanetInfo = showPlanetInfo;
+window.hidePlanetInfo = hidePlanetInfo;
+
 let tooltipIsHovered = false;
 let tooltipIsFixed = false;
 let tooltipFixedPos = { left: 0, top: 0 };
@@ -337,6 +498,7 @@ function onMouseMove(event) {
     let wikiHtml = '';
     if (wikiLinks[data.name]) {
       wikiHtml = `<br><a href='${wikiLinks[data.name]}' target='_blank' style='color:#ffd700;text-decoration:underline;font-weight:bold;'>Learn more on Wikipedia</a>`;
+      wikiHtml += `<br><button onclick='showPlanetInfo("${data.name}")' style='background:#4CAF50;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;margin-top:4px;font-size:12px;'>More Info</button>`;
     }
     tooltip.innerHTML = `<strong>${data.name}</strong><br>Type: ${data.type}<br>Size: ${data.size}<br>Distance: ${data.distance}${wikiHtml}`;
     if (!tooltipIsFixed) {
