@@ -10,6 +10,35 @@ let planetMeshes = [];
 
 // Tooltip element
 let tooltip = document.createElement('div');
+tooltip.style.position = 'fixed';
+tooltip.style.pointerEvents = 'auto'; // allow mouse events
+tooltip.style.background = 'rgba(0,0,0,0.8)';
+tooltip.style.color = '#fff';
+tooltip.style.padding = '8px 12px';
+tooltip.style.borderRadius = '6px';
+tooltip.style.fontSize = '14px';
+tooltip.style.display = 'none';
+tooltip.style.zIndex = '1000';
+document.body.appendChild(tooltip);
+
+let tooltipIsHovered = false;
+let tooltipIsFixed = false;
+let tooltipFixedPos = { left: 0, top: 0 };
+tooltip.addEventListener('mouseenter', function() {
+  tooltipIsHovered = true;
+});
+tooltip.addEventListener('mouseleave', function() {
+  tooltipIsHovered = false;
+  if (!tooltipIsFixed) tooltip.style.display = 'none';
+});
+
+document.addEventListener('mousedown', function(e) {
+  if (tooltipIsFixed && !tooltip.contains(e.target)) {
+    tooltipIsFixed = false;
+    tooltip.style.display = 'none';
+  }
+});
+
 // --- Background Audio ---
 const bgAudio = document.createElement('audio');
 bgAudio.src = '../audio/Combined_Compressed.mp3';
@@ -38,17 +67,6 @@ document.getElementById('startAudioBtn').onclick = function() {
   bgAudio.play();
   audioOverlay.style.display = 'none';
 };
-tooltip.style.position = 'fixed';
-tooltip.style.pointerEvents = 'none';
-tooltip.style.background = 'rgba(0,0,0,0.8)';
-tooltip.style.color = '#fff';
-tooltip.style.padding = '8px 12px';
-tooltip.style.borderRadius = '6px';
-tooltip.style.fontSize = '14px';
-tooltip.style.display = 'none';
-tooltip.style.zIndex = '1000';
-document.body.appendChild(tooltip);
-
 
 let mercury_orbit_radius = 50
 let venus_orbit_radius = 60
@@ -190,6 +208,7 @@ function init() {
 
   // Raycaster setup
   window.addEventListener('mousemove', onMouseMove, false);
+  window.addEventListener('click', onMouseClick, false);
 
   const sunLight = new THREE.PointLight(0xffffff, 1, 0); // White light, intensity 1, no distance attenuation
   sunLight.position.copy(planet_sun.position); // Position the light at the Sun's position
@@ -291,6 +310,7 @@ function animate(time) {
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
+// Update onMouseMove and add click event for fixing tooltip
 function onMouseMove(event) {
   // Calculate mouse position in normalized device coordinates (-1 to +1)
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -302,19 +322,63 @@ function onMouseMove(event) {
   if (intersects.length > 0) {
     const planet = intersects[0].object;
     const data = planet.userData;
-    tooltip.innerHTML = `<strong>${data.name}</strong><br>Type: ${data.type}<br>Size: ${data.size}<br>Distance: ${data.distance}`;
-    tooltip.style.left = (event.clientX + 15) + 'px';
-    tooltip.style.top = (event.clientY + 15) + 'px';
+    // Wikipedia links for each planet
+    const wikiLinks = {
+      'Sun': 'https://en.wikipedia.org/wiki/Sun',
+      'Mercury': 'https://en.wikipedia.org/wiki/Mercury_(planet)',
+      'Venus': 'https://en.wikipedia.org/wiki/Venus',
+      'Earth': 'https://en.wikipedia.org/wiki/Earth',
+      'Mars': 'https://en.wikipedia.org/wiki/Mars',
+      'Jupiter': 'https://en.wikipedia.org/wiki/Jupiter',
+      'Saturn': 'https://en.wikipedia.org/wiki/Saturn',
+      'Uranus': 'https://en.wikipedia.org/wiki/Uranus',
+      'Neptune': 'https://en.wikipedia.org/wiki/Neptune'
+    };
+    let wikiHtml = '';
+    if (wikiLinks[data.name]) {
+      wikiHtml = `<br><a href='${wikiLinks[data.name]}' target='_blank' style='color:#ffd700;text-decoration:underline;font-weight:bold;'>Learn more on Wikipedia</a>`;
+    }
+    tooltip.innerHTML = `<strong>${data.name}</strong><br>Type: ${data.type}<br>Size: ${data.size}<br>Distance: ${data.distance}${wikiHtml}`;
+    if (!tooltipIsFixed) {
+      tooltip.style.left = (event.clientX + 15) + 'px';
+      tooltip.style.top = (event.clientY + 15) + 'px';
+      tooltipFixedPos.left = tooltip.style.left;
+      tooltipFixedPos.top = tooltip.style.top;
+    } else {
+      tooltip.style.left = tooltipFixedPos.left;
+      tooltip.style.top = tooltipFixedPos.top;
+    }
     tooltip.style.display = 'block';
   } else {
-    tooltip.style.display = 'none';
+    if (!tooltipIsHovered && !tooltipIsFixed) {
+      tooltip.style.display = 'none';
+    }
   }
-
-
-
-
   controls.update();
   renderer.render(scene, camera);
+}
+
+function onMouseClick(event) {
+  // Calculate mouse position in normalized device coordinates (-1 to +1)
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(planetMeshes);
+
+  if (intersects.length > 0) {
+    // Planet was clicked - fix the tooltip position
+    tooltipIsFixed = true;
+    tooltip.style.left = tooltipFixedPos.left;
+    tooltip.style.top = tooltipFixedPos.top;
+    tooltip.style.display = 'block';
+  } else {
+    // Clicked outside - hide tooltip if it's fixed
+    if (tooltipIsFixed) {
+      tooltipIsFixed = false;
+      tooltip.style.display = 'none';
+    }
+  }
 }
 
 function onWindowResize() {
