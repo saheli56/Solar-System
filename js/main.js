@@ -385,6 +385,8 @@ function init() {
   const saturnRing = createRing(15, { texture: '../img/saturn_ring.jpg', opacity: 0.85, thickness: 2 });
   saturnRing.position.set(0, 0, 0); // Centered on Saturn
   planet_saturn.add(saturnRing);
+  // Add Saturn's orbit ring
+  createRing(saturn_orbit_radius);
   createRing(uranus_orbit_radius);
   createRing(neptune_orbit_radius);
 
@@ -583,14 +585,14 @@ createButton('🔊 Mute Music', 'muteMusicBtn');
 const style = document.createElement('style');
 style.innerHTML = `
   .solar-btn {
-    background: linear-gradient(120deg, #2b5876 0%, #4e4376 100%);
-    color: #fff;
+    background: linear-gradient(120deg, #23395d 0%, #1e2a38 100%);
+    color: #f5f5f5;
     border: none;
     border-radius: 16px;
     padding: 16px 38px;
     font-size: 1.15rem;
     font-family: inherit;
-    box-shadow: 0 6px 24px 0 rgba(0,0,0,0.35), 0 0 0 3px #fff2 inset;
+    box-shadow: 0 6px 24px 0 rgba(30,42,56,0.35), 0 0 0 3px #ffd70022 inset;
     cursor: pointer;
     transition: transform 0.22s cubic-bezier(.25,.8,.25,1), box-shadow 0.22s, background 0.32s;
     outline: none;
@@ -603,28 +605,28 @@ style.innerHTML = `
     content: '';
     position: absolute;
     top: -50%; left: -50%; width: 200%; height: 200%;
-    background: linear-gradient(120deg, #ffefba 0%, #ffffff 100%);
-    opacity: 0.18;
+    background: linear-gradient(120deg, #ffd700 0%, #f5f5f5 100%);
+    opacity: 0.12;
     filter: blur(18px);
     z-index: 0;
     transition: opacity 0.3s;
   }
   .solar-btn:hover::before {
-    opacity: 0.32;
+    opacity: 0.22;
   }
   .solar-btn::after {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     border-radius: 16px;
-    box-shadow: 0 0 18px 4px #fff6, 0 0 0 2px #ffd700 inset;
+    box-shadow: 0 0 18px 4px #ffd70033, 0 0 0 2px #ffd700 inset;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.18;
+    opacity: 0.14;
     transition: opacity 0.3s;
   }
   .solar-btn:hover::after {
-    opacity: 0.38;
+    opacity: 0.28;
   }
   .solar-btn span {
     position: relative;
@@ -633,18 +635,18 @@ style.innerHTML = `
     transition: transform 0.22s;
   }
   .solar-btn:hover span {
-    transform: scale(1.18) rotate(-6deg);
-    text-shadow: 0 0 12px #ffd700, 0 0 4px #fff;
+    transform: scale(1.12) rotate(-4deg);
+    text-shadow: 0 0 8px #ffd700, 0 0 2px #fff;
   }
   .solar-btn:hover {
-    background: linear-gradient(120deg, #4e4376 0%, #2b5876 100%);
-    box-shadow: 0 12px 36px 0 #ffd70044, 0 0 0 4px #ffd700 inset;
-    transform: scale(1.09) rotateX(10deg) rotateY(-10deg);
+    background: linear-gradient(120deg, #1e2a38 0%, #23395d 100%);
+    box-shadow: 0 12px 36px 0 #ffd70022, 0 0 0 4px #ffd700 inset;
+    transform: scale(1.06) rotateX(6deg) rotateY(-6deg);
   }
   .solar-btn:active {
     transform: scale(0.97) rotateX(0deg) rotateY(0deg);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.22);
-    background: linear-gradient(120deg, #2b5876 0%, #4e4376 100%);
+    box-shadow: 0 2px 8px rgba(30,42,56,0.22);
+    background: linear-gradient(120deg, #23395d 0%, #1e2a38 100%);
   }
 `;
 document.head.appendChild(style);
