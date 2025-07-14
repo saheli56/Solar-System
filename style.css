@@ -18,14 +18,15 @@
   width: 120px;
 }
 .btn {
-  background: white;
-  color: black;
+  background: #ff9800;
+  color: #fff;
   font-weight: bold;
-  font-size: 15px;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  font-size: 18px;
+  border-radius: 28px;
+  width: 54px;
+  height: 54px;
   border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -khtml-user-select: none; /* Konqueror HTML */
@@ -34,6 +35,20 @@
   user-select: none;
   outline: none;
   cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+}
+.btn::after {
+  display: none;
+}
+.btn:hover {
+  background: #ff5722;
+  box-shadow: 0 4px 16px rgba(255,152,0,0.18);
+  transform: scale(1.08);
+}
+.btn:hover::after {
+  display: none;
+}
 }
 
 #msg {

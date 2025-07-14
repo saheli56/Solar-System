@@ -261,15 +261,22 @@ function animate(time) {
   planetRevolver(time, uranus_revolution_speed, planet_uranus, uranus_orbit_radius, 'uranus');
   planetRevolver(time, neptune_revolution_speed, planet_neptune, neptune_orbit_radius, 'neptune');
 
-  // Make shuttle follow Earth
+  // Make shuttle orbit around Earth
   if (window.shuttleMesh && planet_earth) {
-    window.shuttleMesh.position.set(
-      planet_earth.position.x + 12,
-      planet_earth.position.y + 6,
-      planet_earth.position.z + 0
-    );
-    window.shuttleMesh.rotation.y = Math.PI / 4;
-    window.shuttleMesh.rotation.x = -Math.PI / 12;
+    // Shuttle orbit parameters
+    const shuttleOrbitRadius = 12; // distance from Earth
+    const shuttleOrbitHeight = 6; // height above Earth
+    const shuttleOrbitSpeed = 0.002; // relative speed
+    // Calculate shuttle's angle around Earth
+    const shuttleAngle = time * shuttleOrbitSpeed;
+    // Shuttle position in Earth's local orbit
+    const shuttleX = planet_earth.position.x + shuttleOrbitRadius * Math.cos(shuttleAngle);
+    const shuttleY = planet_earth.position.y + shuttleOrbitHeight;
+    const shuttleZ = planet_earth.position.z + shuttleOrbitRadius * Math.sin(shuttleAngle);
+    window.shuttleMesh.position.set(shuttleX, shuttleY, shuttleZ);
+    // Orient shuttle to face direction of motion
+    window.shuttleMesh.lookAt(planet_earth.position.x, planet_earth.position.y, planet_earth.position.z);
+    window.shuttleMesh.rotateX(-Math.PI / 8); // slight tilt for realism
   }
 
   // Animate shooting stars
@@ -334,7 +341,7 @@ document.body.appendChild(controlsContainer);
 function createButton(text, id) {
   const btn = document.createElement('button');
   btn.id = id;
-  btn.innerText = text;
+  btn.innerHTML = `<span>${text}</span>`;
   btn.className = 'solar-btn';
   controlsContainer.appendChild(btn);
   return btn;
@@ -350,29 +357,68 @@ createButton('🔊 Mute Music', 'muteMusicBtn');
 const style = document.createElement('style');
 style.innerHTML = `
   .solar-btn {
-    background: linear-gradient(135deg, #222 60%, #444 100%);
+    background: linear-gradient(120deg, #2b5876 0%, #4e4376 100%);
     color: #fff;
     border: none;
-    border-radius: 12px;
-    padding: 12px 28px;
-    font-size: 1rem;
+    border-radius: 16px;
+    padding: 16px 38px;
+    font-size: 1.15rem;
     font-family: inherit;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.25), 0 1.5px 0 #fff inset;
+    box-shadow: 0 6px 24px 0 rgba(0,0,0,0.35), 0 0 0 3px #fff2 inset;
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(.25,.8,.25,1), box-shadow 0.2s, background 0.3s;
-    perspective: 300px;
+    transition: transform 0.22s cubic-bezier(.25,.8,.25,1), box-shadow 0.22s, background 0.32s;
     outline: none;
     margin: 0;
     position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .solar-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(120deg, #ffefba 0%, #ffffff 100%);
+    opacity: 0.18;
+    filter: blur(18px);
+    z-index: 0;
+    transition: opacity 0.3s;
+  }
+  .solar-btn:hover::before {
+    opacity: 0.32;
+  }
+  .solar-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 16px;
+    box-shadow: 0 0 18px 4px #fff6, 0 0 0 2px #ffd700 inset;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.18;
+    transition: opacity 0.3s;
+  }
+  .solar-btn:hover::after {
+    opacity: 0.38;
+  }
+  .solar-btn span {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    transition: transform 0.22s;
+  }
+  .solar-btn:hover span {
+    transform: scale(1.18) rotate(-6deg);
+    text-shadow: 0 0 12px #ffd700, 0 0 4px #fff;
   }
   .solar-btn:hover {
-    transform: scale(1.08) rotateX(8deg) rotateY(-8deg);
-    box-shadow: 0 8px 32px rgba(255,255,255,0.15), 0 2px 0 #fff inset;
-    background: linear-gradient(135deg, #333 60%, #666 100%);
+    background: linear-gradient(120deg, #4e4376 0%, #2b5876 100%);
+    box-shadow: 0 12px 36px 0 #ffd70044, 0 0 0 4px #ffd700 inset;
+    transform: scale(1.09) rotateX(10deg) rotateY(-10deg);
   }
   .solar-btn:active {
-    transform: scale(0.98) rotateX(0deg) rotateY(0deg);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transform: scale(0.97) rotateX(0deg) rotateY(0deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+    background: linear-gradient(120deg, #2b5876 0%, #4e4376 100%);
   }
 `;
 document.head.appendChild(style);
