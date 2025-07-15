@@ -585,14 +585,14 @@ createButton('🔊 Mute Music', 'muteMusicBtn');
 const style = document.createElement('style');
 style.innerHTML = `
   .solar-btn {
-    background: linear-gradient(120deg, #23395d 0%, #1e2a38 100%);
-    color: #f5f5f5;
+    background: linear-gradient(135deg, #7b2ff2 0%, #f357a8 50%, #4e54c8 100%);
+    color: #f8f6f2;
     border: none;
     border-radius: 16px;
     padding: 16px 38px;
     font-size: 1.15rem;
-    font-family: inherit;
-    box-shadow: 0 6px 24px 0 rgba(30,42,56,0.35), 0 0 0 3px #ffd70022 inset;
+    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    box-shadow: 0 6px 24px 0 rgba(44, 44, 44, 0.28), 0 0 0 3px #d4af3777 inset;
     cursor: pointer;
     transition: transform 0.22s cubic-bezier(.25,.8,.25,1), box-shadow 0.22s, background 0.32s;
     outline: none;
@@ -600,14 +600,15 @@ style.innerHTML = `
     position: relative;
     overflow: hidden;
     z-index: 1;
+    letter-spacing: 0.02em;
   }
   .solar-btn::before {
     content: '';
     position: absolute;
     top: -50%; left: -50%; width: 200%; height: 200%;
-    background: linear-gradient(120deg, #ffd700 0%, #f5f5f5 100%);
-    opacity: 0.12;
-    filter: blur(18px);
+    background: linear-gradient(120deg, #d4af37 0%, #fffbe6 100%);
+    opacity: 0.10;
+    filter: blur(22px);
     z-index: 0;
     transition: opacity 0.3s;
   }
@@ -619,10 +620,10 @@ style.innerHTML = `
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     border-radius: 16px;
-    box-shadow: 0 0 18px 4px #ffd70033, 0 0 0 2px #ffd700 inset;
+    box-shadow: 0 0 18px 4px #d4af3733, 0 0 0 2px #d4af37 inset;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.14;
+    opacity: 0.13;
     transition: opacity 0.3s;
   }
   .solar-btn:hover::after {
@@ -633,20 +634,22 @@ style.innerHTML = `
     z-index: 2;
     display: inline-block;
     transition: transform 0.22s;
+    font-weight: 500;
+    text-shadow: 0 1px 2px #23252644;
   }
   .solar-btn:hover span {
-    transform: scale(1.12) rotate(-4deg);
-    text-shadow: 0 0 8px #ffd700, 0 0 2px #fff;
+    transform: scale(1.12) rotate(-2deg);
+    text-shadow: 0 0 10px #d4af37, 0 0 2px #fff;
   }
   .solar-btn:hover {
-    background: linear-gradient(120deg, #1e2a38 0%, #23395d 100%);
-    box-shadow: 0 12px 36px 0 #ffd70022, 0 0 0 4px #ffd700 inset;
-    transform: scale(1.06) rotateX(6deg) rotateY(-6deg);
+    background: linear-gradient(135deg, #414345 0%, #232526 100%);
+    box-shadow: 0 12px 36px 0 #d4af3722, 0 0 0 4px #d4af37 inset;
+    transform: scale(1.06) rotateX(4deg) rotateY(-4deg);
   }
   .solar-btn:active {
     transform: scale(0.97) rotateX(0deg) rotateY(0deg);
-    box-shadow: 0 2px 8px rgba(30,42,56,0.22);
-    background: linear-gradient(120deg, #23395d 0%, #1e2a38 100%);
+    box-shadow: 0 2px 8px rgba(44,44,44,0.18);
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
   }
 `;
 document.head.appendChild(style);
