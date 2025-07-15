@@ -77,3 +77,22 @@
   top: 20px;
   right: 5px;
 }
+
+/* Info panel close button fix */
+#planetInfoPanel button {
+  position: relative;
+  z-index: 10;
+  margin-right: 8px;
+  margin-left: 12px;
+  padding: 8px 18px;
+  font-size: 16px;
+  background: #f44336;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+#planetInfoPanel button:hover {
+  background: #d32f2f;
+}
