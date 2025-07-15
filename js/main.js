@@ -1,7 +1,11 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.129.0";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
+import { EffectComposer } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/postprocessing/UnrealBloomPass.js";
 
 let scene, camera, renderer, controls, skybox;
+let composer;
 let planet_sun, planet_mercury, planet_venus, planet_earth, planet_mars, planet_jupiter, planet_saturn, planet_uranus, planet_neptune;
 let planet_sun_label;
 
@@ -330,15 +334,6 @@ function init() {
 
   planetMeshes = [planet_mercury, planet_venus, planet_earth, planet_mars, planet_jupiter, planet_saturn, planet_uranus, planet_neptune, planet_sun];
 
-  // planet_earth_label = new THREE.TextGeometry( text, parameters );
-  // planet_mercury_label = loadPlanetTexture("../img/mercury_hd.jpg", 2, 100, 100);
-  // planet_venus_label = loadPlanetTexture("../img/venus_hd.jpg", 3, 100, 100);
-  // planet_mars_label = loadPlanetTexture("../img/mars_hd.jpg", 3.5, 100, 100);
-  // planet_jupiter_label = loadPlanetTexture("../img/jupiter_hd.jpg", 10, 100, 100);
-  // planet_saturn_label = loadPlanetTexture("../img/saturn_hd.jpg", 8, 100, 100);
-  // planet_uranus_label = loadPlanetTexture("../img/uranus_hd.jpg", 6, 100, 100);
-  // planet_neptune_label = loadPlanetTexture("../img/neptune_hd.jpg", 5, 100, 100);
-
   // ADD PLANETS TO THE SCENE
   scene.add(planet_earth);
   scene.add(planet_sun);
@@ -371,9 +366,41 @@ function init() {
   window.addEventListener('mousemove', onMouseMove, false);
   window.addEventListener('click', onMouseClick, false);
 
-  const sunLight = new THREE.PointLight(0xffffff, 1, 0); // White light, intensity 1, no distance attenuation
+  // --- Sun Lighting ---
+  const sunLight = new THREE.PointLight(0xffffff, 1.2, 0); // White light, higher intensity
   sunLight.position.copy(planet_sun.position); // Position the light at the Sun's position
   scene.add(sunLight);
+
+  // --- Bloom Effect ---
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+  renderer.domElement.id = "c";
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.minDistance = 12;
+  controls.maxDistance = 1000;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+
+  // Bloom composer setup
+  const renderScene = new RenderPass(scene, camera);
+  const bloomParams = {
+    exposure: 1.1,
+    bloomStrength: 2.2,
+    bloomThreshold: 0.1,
+    bloomRadius: 0.85
+  };
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    bloomParams.bloomStrength,
+    bloomParams.bloomRadius,
+    bloomParams.bloomThreshold
+  );
+  composer = new EffectComposer(renderer);
+  composer.addPass(renderScene);
+  composer.addPass(bloomPass);
+
+  camera.position.z = 100;
 
   // Rotation orbit
   createRing(mercury_orbit_radius);
@@ -389,21 +416,6 @@ function init() {
   createRing(saturn_orbit_radius);
   createRing(uranus_orbit_radius);
   createRing(neptune_orbit_radius);
-
-
-
-
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-  renderer.domElement.id = "c";
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.minDistance = 12;
-  controls.maxDistance = 1000;
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.08;
-
-  camera.position.z = 100;
 }
 
 
@@ -466,7 +478,7 @@ function animate(time) {
   // Animate comets
   updateComets();
   controls.update();
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 // Raycasting logic
@@ -802,7 +814,7 @@ function animateWrapper(time) {
   } else {
     // When paused, keep updating controls and rendering for smooth orbit rotation
     controls.update();
-    renderer.render(scene, camera);
+    composer.render();
     animationFrameId = requestAnimationFrame(animateWrapper);
   }
 }
